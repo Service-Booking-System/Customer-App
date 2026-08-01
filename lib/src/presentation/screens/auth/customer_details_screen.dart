@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:customer_app/core/constants/app_assets.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
+import 'package:customer_app/src/presentation/screens/auth/add_properties_screen.dart';
 
 enum AccountType { individual, business }
 
@@ -29,6 +31,12 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
 
   AccountType _accountType = AccountType.individual;
   bool _formValid = false;
+
+  // Sheet drag-to-expand variables
+  double? _sheetTop;
+  bool _isDragging = false;
+  bool _hasCalculatedDefaultTop = false;
+  double _defaultTop = 220.0;
 
   late AnimationController _animController;
   late Animation<Offset> _sheetSlideAnimation;
@@ -144,24 +152,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
     if (!_formValid) return;
     HapticFeedback.mediumImpact();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white),
-            SizedBox(width: 8.w),
-            Text(
-              'Profile completed successfully!',
-              style: GoogleFonts.plusJakartaSans(color: Colors.white),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        duration: const Duration(seconds: 3),
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (context) => const AddPropertiesScreen(),
       ),
     );
   }
@@ -169,6 +162,15 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final topSafeArea = MediaQuery.of(context).padding.top;
+    final minTop = topSafeArea + 12.h; // Snaps cleanly below status bar & dynamic island
+
+    // Calculate default top position once
+    if (!_hasCalculatedDefaultTop) {
+      _defaultTop = (screenHeight * 0.30).clamp(160.0, 300.0);
+      _sheetTop = _defaultTop;
+      _hasCalculatedDefaultTop = true;
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -283,9 +285,11 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
               ),
             ),
 
-            // Bottom Section - Animated White Card Sheet
-            Positioned(
-              top: (screenHeight * 0.30).clamp(160.0, 300.0),
+            // Bottom Section - Drag-to-Expand White Card Sheet
+            AnimatedPositioned(
+              duration: _isDragging ? Duration.zero : const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              top: _sheetTop ?? _defaultTop,
               left: 0,
               right: 0,
               bottom: 0,
@@ -315,18 +319,43 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 1. Grabber Pill (Static)
-                            Center(
+                            // 1. Drag grabber pill gesture area
+                            GestureDetector(
+                              onVerticalDragStart: (_) {
+                                setState(() {
+                                  _isDragging = true;
+                                });
+                              },
+                              onVerticalDragUpdate: (details) {
+                                setState(() {
+                                  _sheetTop = (_sheetTop! + details.primaryDelta!)
+                                      .clamp(minTop, _defaultTop);
+                                });
+                              },
+                              onVerticalDragEnd: (details) {
+                                setState(() {
+                                  _isDragging = false;
+                                  final velocity = details.primaryVelocity ?? 0.0;
+                                  if (velocity < -300 || _sheetTop! < _defaultTop * 0.6) {
+                                    _sheetTop = minTop; // Expand cleanly below notch
+                                  } else {
+                                    _sheetTop = _defaultTop; // Collapse back to default
+                                  }
+                                });
+                              },
+                              behavior: HitTestBehavior.opaque,
                               child: Container(
-                                margin: EdgeInsets.only(
-                                  top: 12.h,
-                                  bottom: 6.h,
-                                ),
-                                width: 38.w,
-                                height: 4.h,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE2E4DE),
-                                  borderRadius: BorderRadius.circular(10.r),
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                child: Center(
+                                  child: Container(
+                                    width: 38.w,
+                                    height: 4.h,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE2E4DE),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -344,7 +373,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(height: 12.h),
+                                        SizedBox(height: 4.h),
 
                                         // Title
                                         Text(

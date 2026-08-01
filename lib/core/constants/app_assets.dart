@@ -7,4 +7,5 @@ class AppAssets {
   static const String phoneHeader = 'assets/images/phone_header.png';
   static const String otpHeader = 'assets/images/otp_header.png';
   static const String profileHeader = 'assets/images/profile_header.png';
+  static const String propertiesHeader = 'assets/images/properties_header.png';
 }
