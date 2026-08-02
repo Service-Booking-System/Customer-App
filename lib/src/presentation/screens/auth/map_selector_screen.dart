@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
+
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  const LatLng(this.latitude, this.longitude);
+}
 
 class MapSelectorScreen extends StatefulWidget {
   const MapSelectorScreen({super.key});
@@ -13,23 +19,15 @@ class MapSelectorScreen extends StatefulWidget {
 }
 
 class _MapSelectorScreenState extends State<MapSelectorScreen> {
-  GoogleMapController? _mapController;
   LatLng _selectedLatLng = const LatLng(37.7749, -122.4194); // Default to SF
   String _selectedAddress = "Market Street, San Francisco, CA";
   bool _isLoadingAddress = false;
-  bool _useMockMap = false; // Fallback to a beautiful mock layout if Google Maps fails/blank
 
   final TextEditingController _searchController = TextEditingController();
-
-  static const CameraPosition _initialCameraPosition = CameraPosition(
-    target: LatLng(37.7749, -122.4194),
-    zoom: 14.0,
-  );
 
   @override
   void dispose() {
     _searchController.dispose();
-    _mapController?.dispose();
     super.dispose();
   }
 
@@ -55,18 +53,6 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
     });
   }
 
-  void _onCameraMove(CameraPosition position) {
-    if (!_useMockMap) {
-      _selectedLatLng = position.target;
-    }
-  }
-
-  void _onCameraIdle() {
-    if (!_useMockMap) {
-      _reverseGeocode(_selectedLatLng);
-    }
-  }
-
   void _handleConfirm() {
     HapticFeedback.mediumImpact();
     Navigator.of(context).pop({
@@ -78,7 +64,6 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
 
   // Handle mock map drag gesture
   void _handleMockPan(DragUpdateDetails details) {
-    if (!_useMockMap) return;
     setState(() {
       // Convert translation delta to approximate coordinates change
       final double latDelta = -details.delta.dy * 0.0001;
@@ -91,7 +76,6 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
   }
 
   void _handleMockPanEnd(DragEndDetails details) {
-    if (!_useMockMap) return;
     _reverseGeocode(_selectedLatLng);
   }
 
@@ -104,31 +88,18 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-            // 1. Google Map or Fallback Mock Vector Map
-            if (!_useMockMap)
-              GoogleMap(
-                initialCameraPosition: _initialCameraPosition,
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                },
-                onCameraMove: _onCameraMove,
-                onCameraIdle: _onCameraIdle,
-                zoomControlsEnabled: false,
-                myLocationButtonEnabled: false,
-                compassEnabled: false,
-              )
-            else
-              GestureDetector(
-                onPanUpdate: _handleMockPan,
-                onPanEnd: _handleMockPanEnd,
-                child: Container(
-                  color: const Color(0xFFE8ECE5),
-                  child: CustomPaint(
-                    painter: MockMapGridPainter(center: _selectedLatLng),
-                    child: Container(),
-                  ),
+            // 1. Fallback Mock Vector Map
+            GestureDetector(
+              onPanUpdate: _handleMockPan,
+              onPanEnd: _handleMockPanEnd,
+              child: Container(
+                color: const Color(0xFFE8ECE5),
+                child: CustomPaint(
+                  painter: MockMapGridPainter(center: _selectedLatLng),
+                  child: Container(),
                 ),
               ),
+            ),
 
             // 2. Centered Pin Indicator
             Center(
@@ -169,7 +140,7 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
               ),
             ),
 
-            // 3. Search Bar & Status Indicators Overlay (Top)
+            // 3. Search Bar Overlay (Top)
             Positioned(
               top: 0,
               left: 0,
@@ -177,160 +148,93 @@ class _MapSelectorScreenState extends State<MapSelectorScreen> {
               child: SafeArea(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                  child: Column(
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          // Back Button
-                          Container(
-                            width: 44.r,
-                            height: 44.r,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  Navigator.of(context).pop();
-                                },
-                                child: Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 3.w),
-                                    child: Icon(
-                                      Icons.arrow_back_ios_new_rounded,
-                                      size: 18.r,
-                                      color: AppColors.textHeadline,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10.w),
-
-                          // Search Input field
-                          Expanded(
-                            child: Container(
-                              height: 48.h,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.search_rounded,
-                                    color: AppColors.textSecondary,
-                                    size: 20.r,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _searchController,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textHeadline,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: 'Search location...',
-                                        hintStyle: GoogleFonts.plusJakartaSans(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.textSecondary.withValues(alpha: 0.5),
-                                        ),
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10.h),
-
-                      // Fallback Activation Banner (Only shown if simulator / API fails to display)
+                      // Back Button
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                        width: 44.r,
+                        height: 44.r,
                         decoration: BoxDecoration(
-                          color: _useMockMap ? AppColors.primary : Colors.amber.shade900,
-                          borderRadius: BorderRadius.circular(12.r),
-                          boxShadow: const [
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
                             BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 6,
-                              offset: Offset(0, 3),
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              _useMockMap ? Icons.sports_esports_rounded : Icons.info_outline_rounded,
-                              color: Colors.white,
-                              size: 16.r,
-                            ),
-                            SizedBox(width: 8.w),
-                            Expanded(
-                              child: Text(
-                                _useMockMap 
-                                    ? 'Running in Map Simulation Mode (Draggable)'
-                                    : 'Google Map blank? Check API key or toggle Simulation.',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11.5.sp,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
+                        child: Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.of(context).pop();
+                            },
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 3.w),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 18.r,
+                                  color: AppColors.textHeadline,
                                 ),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                HapticFeedback.mediumImpact();
-                                setState(() {
-                                  _useMockMap = !_useMockMap;
-                                  _reverseGeocode(_selectedLatLng);
-                                });
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: Text(
-                                  _useMockMap ? 'Live Map' : 'Simulation',
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+
+                      // Search Input field
+                      Expanded(
+                        child: Container(
+                          height: 48.h,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.search_rounded,
+                                color: AppColors.textSecondary,
+                                size: 20.r,
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 10.5.sp,
-                                    fontWeight: FontWeight.w800,
-                                    color: _useMockMap ? AppColors.primary : Colors.amber.shade900,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textHeadline,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search location...',
+                                    hintStyle: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
