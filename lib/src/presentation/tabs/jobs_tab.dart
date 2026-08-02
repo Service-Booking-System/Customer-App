@@ -16,7 +16,7 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
   final List<Map<String, dynamic>> _allJobs = [
     {
       'id': 'JOB-9842',
-      'service': 'Deep Home Sanitization & Cleaning',
+      'service': 'Deep Home Sanitization &\nCleaning',
       'property': 'Sunset Luxury Villa, SF',
       'provider': 'David Miller',
       'rating': '4.9 ★',
@@ -24,12 +24,13 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'date': 'Today, Aug 02 • 02:00 PM',
       'status': 'In Progress',
       'type': 'ongoing',
-      'statusColor': AppColors.accentLime,
+      'statusColor': AppColors.primaryDark,
+      'statusBg': const Color(0xFFF3F6E6),
       'icon': Icons.cleaning_services_rounded,
     },
     {
       'id': 'JOB-9845',
-      'service': 'HVAC Filter & Air Quality Service',
+      'service': 'HVAC Filter & Air Quality\nService',
       'property': 'Downtown Studio Apt, SF',
       'provider': 'Marcus Vance',
       'rating': '4.8 ★',
@@ -37,8 +38,9 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'date': 'Today, Aug 02 • 04:30 PM',
       'status': 'Pro En Route',
       'type': 'ongoing',
-      'statusColor': const Color(0xFFE5A00D),
-      'icon': Icons.hvac_rounded,
+      'statusColor': const Color(0xFFD97706),
+      'statusBg': const Color(0xFFFEF3C7),
+      'icon': Icons.tune_rounded,
     },
     {
       'id': 'JOB-9830',
@@ -50,7 +52,8 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'date': 'Tomorrow, Aug 03 • 10:00 AM',
       'status': 'Scheduled',
       'type': 'scheduled',
-      'statusColor': AppColors.primaryLight,
+      'statusColor': AppColors.primary,
+      'statusBg': const Color(0xFFF3F6E6),
       'icon': Icons.yard_rounded,
     },
     {
@@ -63,7 +66,8 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'date': 'Jul 28, 2026',
       'status': 'Completed',
       'type': 'completed',
-      'statusColor': AppColors.primary,
+      'statusColor': AppColors.primaryDark,
+      'statusBg': const Color(0xFFF3F6E6),
       'icon': Icons.plumbing_rounded,
     },
     {
@@ -76,7 +80,8 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'date': 'Jul 15, 2026',
       'status': 'Completed',
       'type': 'completed',
-      'statusColor': AppColors.primary,
+      'statusColor': AppColors.primaryDark,
+      'statusBg': const Color(0xFFF3F6E6),
       'icon': Icons.electrical_services_rounded,
     },
   ];
@@ -106,59 +111,80 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.darkHeaderBg,
-        elevation: 0,
-        title: Text(
-          'My Bookings & Jobs',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(50.h),
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14.r),
+      backgroundColor: const Color(0xFFFBFBFB),
+      body: Column(
+        children: [
+          // Header Section with Dark Olive background
+          Container(
+            width: double.infinity,
+            color: AppColors.primaryDark,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 16.h,
+              left: 20.w,
+              right: 20.w,
+              bottom: 20.h,
             ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                color: AppColors.accentLime,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              labelColor: AppColors.textHeadline,
-              unselectedLabelColor: Colors.white70,
-              labelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-              dividerColor: Colors.transparent,
-              tabs: const [
-                Tab(text: 'Ongoing (2)'),
-                Tab(text: 'Scheduled (1)'),
-                Tab(text: 'Past (2)'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Bookings & Jobs',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+
+                // Pill Tab Bar
+                Container(
+                  padding: EdgeInsets.all(4.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: AppColors.accentLime,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    labelColor: AppColors.primaryDark,
+                    unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
+                    labelStyle: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    unselectedLabelStyle: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    dividerColor: Colors.transparent,
+                    tabs: const [
+                      Tab(text: 'Ongoing (2)'),
+                      Tab(text: 'Scheduled (1)'),
+                      Tab(text: 'Past (2)'),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildJobsList(0),
-          _buildJobsList(1),
-          _buildJobsList(2),
+
+          // Content TabBarView
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildJobsList(0),
+                _buildJobsList(1),
+                _buildJobsList(2),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -188,50 +214,59 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
     }
 
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 110.h),
+      padding: EdgeInsets.fromLTRB(18.w, 20.h, 18.w, 120.h),
       itemCount: jobs.length,
-      separatorBuilder: (context, index) => SizedBox(height: 12.h),
+      separatorBuilder: (context, index) => SizedBox(height: 16.h),
       itemBuilder: (context, index) {
         final job = jobs[index];
-        return _buildJobItemCard(job);
+        return _buildJobCard(job);
       },
     );
   }
 
-  Widget _buildJobItemCard(Map<String, dynamic> job) {
+  Widget _buildJobCard(Map<String, dynamic> job) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: AppColors.borderUnselected),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: const Color(0xFFE8ECD8),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: AppColors.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(18.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icon Box
               Container(
-                padding: EdgeInsets.all(10.r),
+                width: 46.r,
+                height: 46.r,
                 decoration: BoxDecoration(
-                  color: AppColors.cardSelectedBg,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: AppColors.borderUnselected),
+                  color: const Color(0xFFF3F6E6),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
-                child: Icon(
-                  job['icon'] as IconData,
-                  color: AppColors.primary,
-                  size: 24.r,
+                child: Center(
+                  child: Icon(
+                    job['icon'] as IconData,
+                    color: AppColors.primaryDark,
+                    size: 22.r,
+                  ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 14.w),
+
+              // Title and Subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,27 +274,31 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
                     Text(
                       job['service'] as String,
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textHeadline,
+                        fontSize: 15.5.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryDark,
+                        height: 1.25,
                       ),
                     ),
-                    SizedBox(height: 2.h),
+                    SizedBox(height: 6.h),
                     Text(
                       '${job['id']} • ${job['property']}',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textMuted,
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 8.w),
+
+              // Status Tag Badge
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                 decoration: BoxDecoration(
-                  color: (job['statusColor'] as Color).withValues(alpha: 0.12),
+                  color: job['statusBg'] as Color? ?? const Color(0xFFF3F6E6),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -267,30 +306,36 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w700,
-                    color: (job['statusColor'] as Color) == AppColors.accentLime
-                        ? AppColors.primary
-                        : job['statusColor'] as Color,
+                    color: job['statusColor'] as Color,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          Divider(height: 1, color: AppColors.borderUnselected.withValues(alpha: 0.6)),
-          SizedBox(height: 12.h),
+          SizedBox(height: 16.h),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: const Color(0xFFEFF2E4),
+          ),
+          SizedBox(height: 14.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 14.r, color: AppColors.textMuted),
-                  SizedBox(width: 6.w),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 15.r,
+                    color: AppColors.primaryDark.withValues(alpha: 0.8),
+                  ),
+                  SizedBox(width: 8.w),
                   Text(
                     job['date'] as String,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryDark,
                     ),
                   ),
                 ],
@@ -298,9 +343,9 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
               Text(
                 job['price'] as String,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15.sp,
+                  fontSize: 17.sp,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
+                  color: AppColors.primaryDark,
                 ),
               ),
             ],

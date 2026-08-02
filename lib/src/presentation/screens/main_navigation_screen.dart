@@ -68,7 +68,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   onNavigateTab: _onTabSelected,
                 ),
                 const JobsTab(),
-                const SearchTab(),
+                SearchTab(
+                  onBackTap: () => _onTabSelected(0),
+                ),
                 const AlertsTab(),
                 ProfileTab(
                   onAddPropertyTap: _openAddProperties,
@@ -76,13 +78,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ],
             ),
 
-            // Floating Light Mode Custom Curvature Bottom Navigation Bar
-            Positioned(
-              left: 16.w,
-              right: 16.w,
-              bottom: 24.h,
-              child: _buildCustomBottomNavigationBar(),
-            ),
+            // Floating Light Mode Custom Curvature Bottom Navigation Bar (Hidden on Search Tab)
+            if (_currentIndex != 2)
+              Positioned(
+                left: 16.w,
+                right: 16.w,
+                bottom: 24.h,
+                child: _buildCustomBottomNavigationBar(),
+              ),
           ],
         ),
       ),
@@ -186,7 +189,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ),
                   child: Center(
                     child: Icon(
-                      _currentIndex == 2 ? Icons.search_rounded : Icons.add_rounded,
+                      Icons.search_rounded,
                       color: Colors.white,
                       size: 28.r,
                     ),
