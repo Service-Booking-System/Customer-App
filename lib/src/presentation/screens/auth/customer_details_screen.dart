@@ -7,7 +7,7 @@ import 'package:customer_app/core/constants/app_assets.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
 import 'package:customer_app/src/presentation/screens/auth/add_properties_screen.dart';
 
-enum AccountType { individual, business }
+enum Gender { male, female }
 
 class CustomerDetailsScreen extends StatefulWidget {
   const CustomerDetailsScreen({super.key});
@@ -22,14 +22,12 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _taxIdController = TextEditingController();
 
   final FocusNode _firstNameFocus = FocusNode();
   final FocusNode _lastNameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
-  final FocusNode _taxIdFocus = FocusNode();
 
-  AccountType _accountType = AccountType.individual;
+  Gender _selectedGender = Gender.male;
   bool _formValid = false;
 
   // Sheet drag-to-expand variables
@@ -105,11 +103,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _taxIdController.dispose();
     _firstNameFocus.dispose();
     _lastNameFocus.dispose();
     _emailFocus.dispose();
-    _taxIdFocus.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -442,16 +438,15 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
                                           label: 'Email Address',
                                           controller: _emailController,
                                           focusNode: _emailFocus,
-                                          nextFocus: _taxIdFocus,
                                           keyboardType:
                                               TextInputType.emailAddress,
                                           prefixIcon: Icons.email_outlined,
                                         ),
                                         SizedBox(height: 20.h),
 
-                                        // Account Type Toggle Label
+                                        // Gender Toggle Label
                                         Text(
-                                          'Account Type',
+                                          'Gender',
                                           style: GoogleFonts.plusJakartaSans(
                                             fontSize: 13.5.sp,
                                             fontWeight: FontWeight.w700,
@@ -461,32 +456,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
                                         SizedBox(height: 8.h),
 
                                         // Custom Switch Selectors
-                                        _buildAccountTypeSelector(),
-                                        SizedBox(height: 16.h),
-
-                                        // Conditional Tax ID field (Animated)
-                                        AnimatedSize(
-                                          duration: const Duration(
-                                              milliseconds: 300),
-                                          curve: Curves.easeInOutCubic,
-                                          child: _accountType ==
-                                                  AccountType.business
-                                                ? Padding(
-                                                    padding: EdgeInsets.only(
-                                                        bottom: 16.h),
-                                                    child: _buildTextField(
-                                                      label: 'Tax ID (Optional)',
-                                                      controller:
-                                                          _taxIdController,
-                                                      focusNode: _taxIdFocus,
-                                                      keyboardType:
-                                                          TextInputType.text,
-                                                      prefixIcon:
-                                                          Icons.percent_rounded,
-                                                    ),
-                                                  )
-                                                : const SizedBox.shrink(),
-                                        ),
+                                        _buildGenderSelector(),
                                         SizedBox(height: 20.h),
                                       ],
                                     ),
@@ -647,40 +617,40 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
     );
   }
 
-  Widget _buildAccountTypeSelector() {
+  Widget _buildGenderSelector() {
     return Row(
       children: [
         Expanded(
-          child: _buildAccountCard(
-            type: AccountType.individual,
-            title: 'Individual',
-            icon: Icons.person_rounded,
+          child: _buildGenderCard(
+            gender: Gender.male,
+            title: 'Male',
+            icon: Icons.male_rounded,
           ),
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: _buildAccountCard(
-            type: AccountType.business,
-            title: 'Business',
-            icon: Icons.domain_rounded,
+          child: _buildGenderCard(
+            gender: Gender.female,
+            title: 'Female',
+            icon: Icons.female_rounded,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAccountCard({
-    required AccountType type,
+  Widget _buildGenderCard({
+    required Gender gender,
     required String title,
     required IconData icon,
   }) {
-    final isSelected = _accountType == type;
+    final isSelected = _selectedGender == gender;
 
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
         setState(() {
-          _accountType = type;
+          _selectedGender = gender;
         });
       },
       child: AnimatedContainer(
