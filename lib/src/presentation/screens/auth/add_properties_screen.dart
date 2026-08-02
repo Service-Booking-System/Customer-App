@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:customer_app/core/constants/app_assets.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
 import 'package:customer_app/src/presentation/screens/auth/map_selector_screen.dart';
+import 'package:customer_app/src/presentation/screens/main_navigation_screen.dart';
 
 class PropertyItem {
   final String name;
@@ -203,8 +204,15 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
       ),
+    );
+
+    Navigator.of(context).pushAndRemoveUntil(
+      CupertinoPageRoute(
+        builder: (context) => const MainNavigationScreen(),
+      ),
+      (route) => false,
     );
   }
 

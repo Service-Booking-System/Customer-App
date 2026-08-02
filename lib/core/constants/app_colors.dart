@@ -3,33 +3,42 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Primary Theme Colors (Olive Greens from Figma)
-  static const Color primary = Color(0xFF3B4822);
-  static const Color primaryDark = Color(0xFF2E381A);
-  static const Color primaryLight = Color(0xFF566734);
-  static const Color primaryAccent = Color(0xFF4C5B2C);
+  // User Palette Hex Codes
+  // #636B2F - Olive Primary
+  // #BAC095 - Soft Sage Muted
+  // #D4DE95 - Bright Lime Accent
+  // #3D4127 - Deep Dark Olive
+
+  static const Color primary = Color(0xFF636B2F);       // #636B2F
+  static const Color sage = Color(0xFFBAC095);          // #BAC095
+  static const Color accentLime = Color(0xFFD4DE95);     // #D4DE95
+  static const Color primaryDark = Color(0xFF3D4127);     // #3D4127
+
+  static const Color primaryLight = Color(0xFFBAC095);
+  static const Color primaryAccent = Color(0xFF636B2F);
+  static const Color accentOliveLight = Color(0xFFD4DE95);
 
   // Text Colors
-  static const Color textHeadline = Color(0xFF263116);
-  static const Color textPrimary = Color(0xFF1E201B);
-  static const Color textSecondary = Color(0xFF525949);
-  static const Color textMuted = Color(0xFF757A6E);
+  static const Color textHeadline = Color(0xFF3D4127);
+  static const Color textPrimary = Color(0xFF3D4127);
+  static const Color textSecondary = Color(0xFF636B2F);
+  static const Color textMuted = Color(0xFF7B8268);
 
   // Surface & Background Colors
-  static const Color background = Color(0xFFF9FAFB);
+  static const Color background = Color(0xFFFAFAFA);
   static const Color sheetBackground = Colors.white;
-  static const Color darkHeaderBg = Color(0xFF1B1D19);
+  static const Color darkHeaderBg = Color(0xFF3D4127);
 
-  // Border & Radio Colors
-  static const Color borderUnselected = Color(0xFFDDE0D8);
-  static const Color borderSelected = Color(0xFF3B4822);
-  static const Color radioUnselected = Color(0xFFC7CBC0);
-  static const Color radioSelected = Color(0xFF3B4822);
-  static const Color cardSelectedBg = Color(0xFFF7F8F4);
+  // Border & Card Colors
+  static const Color borderUnselected = Color(0xFFE2E6D5);
+  static const Color borderSelected = Color(0xFF636B2F);
+  static const Color radioUnselected = Color(0xFFBAC095);
+  static const Color radioSelected = Color(0xFF636B2F);
+  static const Color cardSelectedBg = Color(0xFFF7F8F0);
   static const Color cardUnselectedBg = Colors.white;
 
   // Button Colors
-  static const Color buttonBackground = Color(0xFF384420);
+  static const Color buttonBackground = Color(0xFF636B2F);
   static const Color buttonText = Colors.white;
-  static const Color buttonShadow = Color(0x33384420);
+  static const Color buttonShadow = Color(0x33636B2F);
 }
