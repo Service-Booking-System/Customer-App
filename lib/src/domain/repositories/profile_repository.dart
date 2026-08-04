@@ -18,6 +18,7 @@ abstract class ProfileRepository {
   Future<List<Property>> getProperties();
   Future<void> addProperty(Property property);
   Future<void> deleteProperty(String propertyId);
+  Future<void> setPrimaryProperty(String propertyId);
 
   Future<bool> changePassword({
     required String currentPassword,
