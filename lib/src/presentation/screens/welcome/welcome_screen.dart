@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:customer_app/core/constants/app_assets.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
 import 'package:customer_app/src/presentation/screens/language/language_selection_screen.dart';
+import 'package:customer_app/src/presentation/screens/main_navigation_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -85,6 +86,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       CupertinoPageRoute(
         builder: (context) => const LanguageSelectionScreen(),
       ),
+    );
+  }
+
+  void _bypassRegistrationForDev(BuildContext context) {
+    HapticFeedback.heavyImpact();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const MainNavigationScreen(),
+      ),
+      (route) => false,
     );
   }
 
@@ -381,15 +392,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                                         const Spacer(),
 
-                                        // "Get Started" Button
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                            bottom: 20.h,
-                                            top: 16.h,
-                                          ),
-                                          child:
-                                              _buildGetStartedButton(context),
-                                        ),
+                                         // Buttons Section
+                                         Padding(
+                                           padding: EdgeInsets.only(
+                                             bottom: 20.h,
+                                             top: 16.h,
+                                           ),
+                                           child: Column(
+                                             children: [
+                                               _buildGetStartedButton(context),
+                                               SizedBox(height: 10.h),
+                                               _buildDevBypassButton(context),
+                                             ],
+                                           ),
+                                         ),
                                       ],
                                     ),
                                   ),
@@ -482,6 +498,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               size: 22,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDevBypassButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48.h,
+      child: OutlinedButton.icon(
+        onPressed: () => _bypassRegistrationForDev(context),
+        icon: Icon(
+          Icons.developer_mode_rounded,
+          color: const Color(0xFFD97706),
+          size: 20.r,
+        ),
+        label: Text(
+          'Skip Registration (Dev Bypass)',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14.5.sp,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFFD97706),
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: const Color(0xFFFEF3C7),
+          side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.r),
+          ),
         ),
       ),
     );
