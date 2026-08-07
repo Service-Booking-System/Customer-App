@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
 import 'package:customer_app/src/data/repositories/profile_repository_impl.dart';
 import 'package:customer_app/src/domain/entities/property.dart';
-import 'package:customer_app/src/presentation/screens/auth/add_properties_screen.dart';
+import 'package:customer_app/src/presentation/screens/profile/add_new_property_screen.dart';
 
 class PropertiesManagementScreen extends StatelessWidget {
   const PropertiesManagementScreen({super.key});
@@ -55,23 +56,39 @@ class PropertiesManagementScreen extends StatelessWidget {
                 if (properties.isEmpty)
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(24.w),
+                    padding: EdgeInsets.all(32.w),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.r),
+                      borderRadius: BorderRadius.circular(24.r),
                       border: Border.all(color: AppColors.borderUnselected),
                     ),
                     child: Column(
                       children: [
-                        Icon(Icons.location_city_rounded,
-                            size: 48.r, color: AppColors.textMuted),
-                        SizedBox(height: 12.h),
+                        Container(
+                          padding: EdgeInsets.all(16.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardSelectedBg,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.location_city_rounded,
+                              size: 40.r, color: AppColors.primary),
+                        ),
+                        SizedBox(height: 16.h),
                         Text(
                           'No Properties Added Yet',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 17.sp,
+                            fontWeight: FontWeight.w800,
                             color: AppColors.textHeadline,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          'Add your first property to schedule home services easily.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13.sp,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -80,7 +97,7 @@ class PropertiesManagementScreen extends StatelessWidget {
                 else
                   ...properties.map((prop) => _buildPropertyTile(context, prop, repository)),
 
-                SizedBox(height: 24.h),
+                SizedBox(height: 16.h),
 
                 // Add Property Button
                 SizedBox(
@@ -91,7 +108,7 @@ class PropertiesManagementScreen extends StatelessWidget {
                       HapticFeedback.lightImpact();
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const AddPropertiesScreen(),
+                          builder: (context) => const AddNewPropertyScreen(),
                         ),
                       );
                     },
@@ -112,6 +129,7 @@ class PropertiesManagementScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(height: 20.h),
               ],
             ),
           );
@@ -126,97 +144,530 @@ class PropertiesManagementScreen extends StatelessWidget {
     ProfileRepositoryImpl repository,
   ) {
     IconData typeIcon = Icons.home_rounded;
-    if (property.type == PropertyType.apartment) typeIcon = Icons.apartment_rounded;
-    if (property.type == PropertyType.villa) typeIcon = Icons.villa_rounded;
-    if (property.type == PropertyType.office) typeIcon = Icons.domain_rounded;
+    String typeLabel = 'House';
+    if (property.type == PropertyType.apartment) {
+      typeIcon = Icons.apartment_rounded;
+      typeLabel = 'Apartment';
+    } else if (property.type == PropertyType.villa) {
+      typeIcon = Icons.villa_rounded;
+      typeLabel = 'Villa';
+    } else if (property.type == PropertyType.office) {
+      typeIcon = Icons.domain_rounded;
+      typeLabel = 'Office';
+    }
+
+    final isPrimary = property.isPrimary;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 14.h),
-      padding: EdgeInsets.all(18.w),
+      margin: EdgeInsets.only(bottom: 20.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-          color: property.isPrimary ? AppColors.primary : AppColors.borderUnselected,
-          width: property.isPrimary ? 2.0 : 1.0,
+          color: isPrimary ? AppColors.primary : const Color(0xFFE8ECE1),
+          width: isPrimary ? 2.0 : 1.2,
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.r),
-            decoration: BoxDecoration(
-              color: AppColors.cardSelectedBg,
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            child: Icon(typeIcon, color: AppColors.primary, size: 24.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3D4127).withValues(alpha: isPrimary ? 0.08 : 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      property.title,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textHeadline,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Hero Image Banner with Floating Badges
+            SizedBox(
+              height: 155.h,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Background Property Photo
+                  _buildPropertyImage(property.imagePath, typeIcon),
+
+                  // Top & Bottom Subtle Gradients for visual contrast
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.55),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.35),
+                        ],
+                        stops: const [0.0, 0.45, 1.0],
                       ),
                     ),
-                    if (property.isPrimary) ...[
-                      SizedBox(width: 8.w),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentLime,
-                          borderRadius: BorderRadius.circular(6.r),
+                  ),
+
+                  // Top Left: Property Type Tag Pill
+                  Positioned(
+                    top: 12.h,
+                    left: 14.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1.0,
                         ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(typeIcon, color: Colors.white, size: 14.r),
+                          SizedBox(width: 5.w),
+                          Text(
+                            typeLabel,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Top Right: Primary Badge & Delete Action
+                  Positioned(
+                    top: 12.h,
+                    right: 14.w,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPrimary) ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentLime,
+                              borderRadius: BorderRadius.circular(20.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.star_rounded,
+                                    size: 14.r, color: AppColors.primaryDark),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'PRIMARY',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 10.5.sp,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.primaryDark,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                        ],
+
+                        // Delete Action Button
+                        InkWell(
+                          onTap: () => _confirmDeleteProperty(context, property, repository),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Container(
+                            padding: EdgeInsets.all(7.r),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.red.shade600,
+                              size: 18.r,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 2. Card Content Body
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title & Default indicator
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
                         child: Text(
-                          'PRIMARY',
+                          property.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 9.sp,
+                            fontSize: 17.sp,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.primaryDark,
+                            color: AppColors.textHeadline,
+                          ),
+                        ),
+                      ),
+                      if (isPrimary)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2F5EC),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_rounded,
+                                  size: 13.r, color: AppColors.primary),
+                              SizedBox(width: 4.w),
+                              Text(
+                                'Default',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11.5.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+
+                  // Location Address
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 15.r,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: 4.w),
+                      Expanded(
+                        child: Text(
+                          property.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  property.address,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12.5.sp,
-                    color: AppColors.textMuted,
                   ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  '${property.bedrooms} Beds • ${property.areaSqft} sqft',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                  SizedBox(height: 12.h),
+
+                  // Specs Badges Row
+                  Row(
+                    children: [
+                      _buildSpecBadge(Icons.bed_rounded, '${property.bedrooms} Beds'),
+                      SizedBox(width: 8.w),
+                      _buildSpecBadge(Icons.square_foot_rounded, '${property.areaSqft} sqft'),
+                      SizedBox(width: 8.w),
+                      _buildSpecBadge(typeIcon, typeLabel),
+                    ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 14.h),
+
+                  // Divider
+                  Container(
+                    height: 1,
+                    color: const Color(0xFFEFF2E7),
+                  ),
+                  SizedBox(height: 10.h),
+
+                  // Bottom Action Footer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (!isPrimary)
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            repository.setPrimaryProperty(property.id);
+                          },
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4.h),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.star_outline_rounded,
+                                  size: 17.r,
+                                  color: AppColors.primary,
+                                ),
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'Set as Primary',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.verified_rounded,
+                              size: 16.r,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 5.w),
+                            Text(
+                              'Primary Residence',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F8F3),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Text(
+                          'Active Property',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-            onPressed: () async {
-              HapticFeedback.lightImpact();
-              await repository.deleteProperty(property.id);
-            },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecBadge(IconData icon, String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6EE),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13.r, color: AppColors.primary),
+          SizedBox(width: 5.w),
+          Text(
+            text,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryDark,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPropertyImage(String? imagePath, IconData fallbackIcon) {
+    if (imagePath != null && imagePath.isNotEmpty) {
+      if (imagePath.startsWith('assets/')) {
+        return Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(fallbackIcon),
+        );
+      } else {
+        try {
+          final file = File(imagePath);
+          if (file.existsSync()) {
+            return Image.file(
+              file,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => _buildFallbackImage(fallbackIcon),
+            );
+          }
+        } catch (_) {}
+      }
+    }
+    return _buildFallbackImage(fallbackIcon);
+  }
+
+  Widget _buildFallbackImage(IconData fallbackIcon) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE5E9D8), Color(0xFFC7CEA8)],
+        ),
+      ),
+      child: Center(
+        child: Icon(fallbackIcon, color: AppColors.primary, size: 48.r),
+      ),
+    );
+  }
+
+  void _confirmDeleteProperty(
+    BuildContext context,
+    Property property,
+    ProfileRepositoryImpl repository,
+  ) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 44.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderUnselected,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Container(
+                  padding: EdgeInsets.all(14.r),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red.shade600,
+                    size: 32.r,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  'Remove Property?',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textHeadline,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Are you sure you want to remove "${property.title}"? You can re-add it anytime.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5.sp,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50.h,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.borderUnselected, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textHeadline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50.h,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(ctx).pop();
+                            HapticFeedback.lightImpact();
+                            await repository.deleteProperty(property.id);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Remove',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

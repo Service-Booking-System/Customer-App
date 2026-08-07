@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:customer_app/core/constants/app_assets.dart';
 import 'package:customer_app/src/domain/entities/user_profile.dart';
 import 'package:customer_app/src/domain/entities/payment_card.dart';
 import 'package:customer_app/src/domain/entities/property.dart';
@@ -80,6 +81,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       bedrooms: 4,
       areaSqft: 2800,
       isPrimary: true,
+      imagePath: AppAssets.propertyVilla,
     ),
     const Property(
       id: 'prop_2',
@@ -89,6 +91,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       bedrooms: 2,
       areaSqft: 1100,
       isPrimary: false,
+      imagePath: AppAssets.propertyApartment,
     ),
     const Property(
       id: 'prop_3',
@@ -98,6 +101,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       bedrooms: 3,
       areaSqft: 2100,
       isPrimary: false,
+      imagePath: AppAssets.propertyCottage,
     ),
   ];
 
@@ -192,6 +196,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
     if (_properties.isNotEmpty && !_properties.any((p) => p.isPrimary)) {
       _properties[0] = _properties[0].copyWith(isPrimary: true);
     }
+    _propertiesController.add(_properties);
+  }
+
+  @override
+  Future<void> setPrimaryProperty(String propertyId) async {
+    _properties = _properties.map((p) {
+      return p.copyWith(isPrimary: p.id == propertyId);
+    }).toList();
     _propertiesController.add(_properties);
   }
 

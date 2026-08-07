@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:customer_app/core/constants/app_colors.dart';
+import 'package:customer_app/src/presentation/screens/jobs/job_details_screen.dart';
 
 class JobsTab extends StatefulWidget {
   const JobsTab({super.key});
@@ -14,6 +16,34 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   final List<Map<String, dynamic>> _allJobs = [
+    {
+      'id': 'JOB-9852',
+      'service': 'Plumbing Leak Inspection',
+      'property': 'Sunset Luxury Villa, SF',
+      'provider': 'Awaiting Assignment',
+      'rating': 'New',
+      'price': '\$110.00',
+      'date': 'Today, Aug 02 • 06:00 PM',
+      'status': 'Waiting',
+      'type': 'waiting',
+      'statusColor': const Color(0xFFD97706),
+      'statusBg': const Color(0xFFFEF3C7),
+      'icon': Icons.hourglass_top_rounded,
+    },
+    {
+      'id': 'JOB-9850',
+      'service': 'Roof Repair & Tiles Service',
+      'property': 'Downtown Studio Apt, SF',
+      'provider': 'Apex Contractors',
+      'rating': '4.9 ★',
+      'price': '\$350.00',
+      'date': 'Today, Aug 02 • 05:00 PM',
+      'status': 'To Approve',
+      'type': 'to_approve',
+      'statusColor': const Color(0xFF2563EB),
+      'statusBg': const Color(0xFFDBEAFE),
+      'icon': Icons.assignment_late_rounded,
+    },
     {
       'id': 'JOB-9842',
       'service': 'Deep Home Sanitization &\nCleaning',
@@ -41,20 +71,6 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       'statusColor': const Color(0xFFD97706),
       'statusBg': const Color(0xFFFEF3C7),
       'icon': Icons.tune_rounded,
-    },
-    {
-      'id': 'JOB-9830',
-      'service': 'Lawn Mowing & Hedge Trimming',
-      'property': 'Sunset Luxury Villa, SF',
-      'provider': 'Green Thumb Services',
-      'rating': '5.0 ★',
-      'price': '\$120.00',
-      'date': 'Tomorrow, Aug 03 • 10:00 AM',
-      'status': 'Scheduled',
-      'type': 'scheduled',
-      'statusColor': AppColors.primary,
-      'statusBg': const Color(0xFFF3F6E6),
-      'icon': Icons.yard_rounded,
     },
     {
       'id': 'JOB-9811',
@@ -89,7 +105,7 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -99,17 +115,31 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
   }
 
   List<Map<String, dynamic>> _getFilteredJobs(int tabIndex) {
-    if (tabIndex == 0) {
-      return _allJobs.where((j) => j['type'] == 'ongoing').toList();
-    } else if (tabIndex == 1) {
-      return _allJobs.where((j) => j['type'] == 'scheduled').toList();
-    } else {
-      return _allJobs.where((j) => j['type'] == 'completed').toList();
+    switch (tabIndex) {
+      case 0:
+        return _allJobs.where((j) => j['type'] == 'waiting').toList();
+      case 1:
+        return _allJobs.where((j) => j['type'] == 'to_approve').toList();
+      case 2:
+        return _allJobs.where((j) => j['type'] == 'ongoing').toList();
+      case 3:
+      default:
+        return _allJobs.where((j) => j['type'] == 'completed').toList();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_tabController.length != 4) {
+      _tabController.dispose();
+      _tabController = TabController(length: 4, vsync: this);
+    }
+
+    final waitingCount = _allJobs.where((j) => j['type'] == 'waiting').length;
+    final toApproveCount = _allJobs.where((j) => j['type'] == 'to_approve').length;
+    final ongoingCount = _allJobs.where((j) => j['type'] == 'ongoing').length;
+    final completedCount = _allJobs.where((j) => j['type'] == 'completed').length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFBFBFB),
       body: Column(
@@ -147,7 +177,10 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
                   ),
                   child: TabBar(
                     controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     indicatorSize: TabBarIndicatorSize.tab,
+                    labelPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
                     indicator: BoxDecoration(
                       color: AppColors.accentLime,
                       borderRadius: BorderRadius.circular(12.r),
@@ -155,18 +188,19 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
                     labelColor: AppColors.primaryDark,
                     unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
                     labelStyle: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5.sp,
+                      fontSize: 12.5.sp,
                       fontWeight: FontWeight.w700,
                     ),
                     unselectedLabelStyle: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5.sp,
+                      fontSize: 12.5.sp,
                       fontWeight: FontWeight.w600,
                     ),
                     dividerColor: Colors.transparent,
-                    tabs: const [
-                      Tab(text: 'Ongoing (2)'),
-                      Tab(text: 'Scheduled (1)'),
-                      Tab(text: 'Past (2)'),
+                    tabs: [
+                      Tab(text: 'Waiting ($waitingCount)'),
+                      Tab(text: 'To Approve ($toApproveCount)'),
+                      Tab(text: 'Ongoing ($ongoingCount)'),
+                      Tab(text: 'Completed ($completedCount)'),
                     ],
                   ),
                 ),
@@ -182,6 +216,7 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
                 _buildJobsList(0),
                 _buildJobsList(1),
                 _buildJobsList(2),
+                _buildJobsList(3),
               ],
             ),
           ),
@@ -219,13 +254,22 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
       separatorBuilder: (context, index) => SizedBox(height: 16.h),
       itemBuilder: (context, index) {
         final job = jobs[index];
-        return _buildJobCard(job);
+        return _buildJobCard(context, job);
       },
     );
   }
 
-  Widget _buildJobCard(Map<String, dynamic> job) {
-    return Container(
+  Widget _buildJobCard(BuildContext context, Map<String, dynamic> job) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => JobDetailsScreen(job: job),
+          ),
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.r),
@@ -352,6 +396,7 @@ class _JobsTabState extends State<JobsTab> with SingleTickerProviderStateMixin {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
