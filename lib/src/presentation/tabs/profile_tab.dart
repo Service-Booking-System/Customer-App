@@ -13,7 +13,6 @@ import 'package:customer_app/src/presentation/screens/profile/payment_methods_sc
 import 'package:customer_app/src/presentation/screens/profile/properties_management_screen.dart';
 import 'package:customer_app/src/presentation/screens/profile/help_support_screen.dart';
 import 'package:customer_app/src/presentation/screens/profile/settings_screen.dart';
-import 'package:customer_app/src/presentation/screens/profile/rewards_referral_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   final VoidCallback? onAddPropertyTap;
@@ -228,75 +227,6 @@ class ProfileTab extends StatelessWidget {
                   padding: EdgeInsets.fromLTRB(16.w, 18.h, 16.w, 110.h),
                   child: Column(
                     children: [
-                      // Rewards & Wallet Banner Tile (Creative Enhancement)
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const RewardsReferralScreen(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 14.h),
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppColors.primary, AppColors.primaryDark],
-                            ),
-                            borderRadius: BorderRadius.circular(18.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryDark.withValues(alpha: 0.15),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(10.r),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.accentLime,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.stars_rounded,
-                                    color: AppColors.primaryDark, size: 22.r),
-                              ),
-                              SizedBox(width: 14.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Rewards & Wallet Balance',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontSize: 14.5.sp,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    SizedBox(height: 2.h),
-                                    Text(
-                                      '${profile.rewardPoints} Points • \$${profile.walletBalance.toStringAsFixed(2)} Credit',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: AppColors.accentLime,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.arrow_forward_ios_rounded,
-                                  size: 14.r, color: Colors.white70),
-                            ],
-                          ),
-                        ),
-                      ),
-
                       // Edit Personal Profile Tile
                       _buildOptionTile(
                         icon: Icons.person_outline_rounded,

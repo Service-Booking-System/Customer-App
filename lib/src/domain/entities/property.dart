@@ -8,6 +8,7 @@ class Property {
   final int bedrooms;
   final int areaSqft;
   final bool isPrimary;
+  final String? imagePath;
 
   const Property({
     required this.id,
@@ -17,6 +18,7 @@ class Property {
     required this.bedrooms,
     required this.areaSqft,
     this.isPrimary = false,
+    this.imagePath,
   });
 
   Property copyWith({
@@ -27,6 +29,7 @@ class Property {
     int? bedrooms,
     int? areaSqft,
     bool? isPrimary,
+    String? imagePath,
   }) {
     return Property(
       id: id ?? this.id,
@@ -36,6 +39,7 @@ class Property {
       bedrooms: bedrooms ?? this.bedrooms,
       areaSqft: areaSqft ?? this.areaSqft,
       isPrimary: isPrimary ?? this.isPrimary,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 }

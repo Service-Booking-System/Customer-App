@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ class PropertyItem {
   final String type; // Home, Office, Apartment, Other
   final double? latitude;
   final double? longitude;
+  final String? imagePath;
 
   const PropertyItem({
     required this.name,
@@ -21,6 +23,7 @@ class PropertyItem {
     required this.type,
     this.latitude,
     this.longitude,
+    this.imagePath,
   });
 }
 
@@ -45,6 +48,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
   String _selectedType = 'Home';
   double? _selectedLatitude;
   double? _selectedLongitude;
+  String? _selectedImagePath;
   bool _isAddingNew = false;
 
   late AnimationController _animController;
@@ -143,6 +147,30 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
       return;
     }
 
+    if (_selectedImagePath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.add_a_photo_rounded, color: Colors.white),
+              SizedBox(width: 8.w),
+              Text(
+                'Please upload a property photo.',
+                style: GoogleFonts.plusJakartaSans(color: Colors.white),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red.shade800,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     final combinedAddress = line2.isNotEmpty 
         ? '$line1, $line2, $city, $province, $postalCode'
         : '$line1, $city, $province, $postalCode';
@@ -155,6 +183,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         type: _selectedType,
         latitude: _selectedLatitude,
         longitude: _selectedLongitude,
+        imagePath: _selectedImagePath,
       ));
       _nameController.clear();
       _addressLine1Controller.clear();
@@ -165,6 +194,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
       _selectedType = 'Home';
       _selectedLatitude = null;
       _selectedLongitude = null;
+      _selectedImagePath = null;
       _isAddingNew = false;
     });
   }
@@ -627,6 +657,167 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
     );
   }
 
+  void _showImagePickerModal() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.borderUnselected,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Upload Property Photo',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textHeadline,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Select or take a high-resolution photo of your property.',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: EdgeInsets.all(10.r),
+                    decoration: const BoxDecoration(
+                      color: AppColors.cardSelectedBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.camera_alt_rounded, color: AppColors.primary, size: 20.r),
+                  ),
+                  title: Text(
+                    'Take Photo (Camera)',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textHeadline,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    setState(() {
+                      _selectedImagePath = AppAssets.propertiesHeader;
+                    });
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: EdgeInsets.all(10.r),
+                    decoration: const BoxDecoration(
+                      color: AppColors.cardSelectedBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.photo_library_rounded, color: AppColors.primary, size: 20.r),
+                  ),
+                  title: Text(
+                    'Choose from Gallery',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textHeadline,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    setState(() {
+                      _selectedImagePath = AppAssets.welcomeHero;
+                    });
+                  },
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  'Sample Property Presets',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textHeadline,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildPresetThumbnail(ctx, AppAssets.propertyVilla, 'Villa / House'),
+                      SizedBox(width: 12.w),
+                      _buildPresetThumbnail(ctx, AppAssets.propertyApartment, 'Apartment'),
+                      SizedBox(width: 12.w),
+                      _buildPresetThumbnail(ctx, AppAssets.propertyCottage, 'Cottage'),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPresetThumbnail(BuildContext modalContext, String assetPath, String title) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(modalContext).pop();
+        setState(() {
+          _selectedImagePath = assetPath;
+        });
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 90.w,
+            height: 65.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              image: DecorationImage(
+                image: AssetImage(assetPath),
+                fit: BoxFit.cover,
+              ),
+              border: Border.all(color: AppColors.primary, width: 1.5),
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPropertyCard(PropertyItem item, int index) {
     IconData typeIcon = Icons.home_rounded;
     if (item.type == 'Office') typeIcon = Icons.domain_rounded;
@@ -634,28 +825,58 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
     if (item.type == 'Other') typeIcon = Icons.location_on_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      margin: EdgeInsets.only(bottom: 14.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F8F3),
-        borderRadius: BorderRadius.circular(16.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: AppColors.borderUnselected,
           width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(10.r),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              typeIcon,
-              color: AppColors.primary,
-              size: 22.r,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14.r),
+            child: SizedBox(
+              width: 62.w,
+              height: 62.h,
+              child: item.imagePath != null && item.imagePath!.isNotEmpty
+                  ? (item.imagePath!.startsWith('assets/')
+                      ? Image.asset(
+                          item.imagePath!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF4F6EE),
+                            child: Center(
+                              child: Icon(typeIcon, color: AppColors.primary, size: 24.r),
+                            ),
+                          ),
+                        )
+                      : Image.file(
+                          File(item.imagePath!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF4F6EE),
+                            child: Center(
+                              child: Icon(typeIcon, color: AppColors.primary, size: 24.r),
+                            ),
+                          ),
+                        ))
+                  : Container(
+                      color: const Color(0xFFF4F6EE),
+                      child: Center(
+                        child: Icon(typeIcon, color: AppColors.primary, size: 24.r),
+                      ),
+                    ),
             ),
           ),
           SizedBox(width: 14.w),
@@ -663,43 +884,61 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textHeadline,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textHeadline,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F6EE),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        item.type,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   item.address,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.5.sp,
+                    fontSize: 12.5.sp,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textSecondary,
                   ),
                 ),
-                if (item.latitude != null && item.longitude != null) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Geo: ${item.latitude!.toStringAsFixed(4)}, ${item.longitude!.toStringAsFixed(4)}',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
           IconButton(
-            onPressed: () => _deleteProperty(index),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _deleteProperty(index);
+            },
             icon: Icon(
               Icons.delete_outline_rounded,
               color: Colors.red.shade400,
-              size: 22.r,
+              size: 20.r,
             ),
           ),
         ],
@@ -753,7 +992,28 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Property Name Input
+        // 1. Location Type selector row (Moved to Top)
+        Text(
+          'Location Type',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textHeadline,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildTypeOption('Home', Icons.home_rounded),
+            _buildTypeOption('Office', Icons.domain_rounded),
+            _buildTypeOption('Apartment', Icons.apartment_rounded),
+            _buildTypeOption('Other', Icons.location_on_rounded),
+          ],
+        ),
+        SizedBox(height: 16.h),
+
+        // 2. Property Name Input
         _buildFormTextField(
           label: 'Property Name (e.g. Home, Office)',
           controller: _nameController,
@@ -762,7 +1022,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 16.h),
 
-        // 2. Map Visual Selector Card
+        // 3. Map Visual Selector Card
         Text(
           'Location on Map',
           style: GoogleFonts.plusJakartaSans(
@@ -834,7 +1094,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 16.h),
 
-        // 3. Address Line 1
+        // 4. Address Line 1
         _buildFormTextField(
           label: 'Address Line 1',
           controller: _addressLine1Controller,
@@ -843,7 +1103,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 14.h),
 
-        // 4. Address Line 2 (Optional)
+        // 5. Address Line 2 (Optional)
         _buildFormTextField(
           label: 'Address Line 2 (Optional)',
           controller: _addressLine2Controller,
@@ -852,7 +1112,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 14.h),
 
-        // 5. City and Province (Row layout)
+        // 6. City and Province (Row layout)
         Row(
           children: [
             Expanded(
@@ -878,7 +1138,7 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 14.h),
 
-        // 6. Postal Code
+        // 7. Postal Code
         _buildFormTextField(
           label: 'Postal / ZIP Code',
           controller: _postalCodeController,
@@ -887,24 +1147,143 @@ class _AddPropertiesScreenState extends State<AddPropertiesScreen>
         ),
         SizedBox(height: 16.h),
 
-        // 7. Property Type selector row
-        Text(
-          'Location Type',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textHeadline,
+        // 8. Property Photo Upload Card (Moved to Bottom, Mandatory)
+        Text.rich(
+          TextSpan(
+            text: 'Property Photo ',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textHeadline,
+            ),
+            children: [
+              TextSpan(
+                text: '*',
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(height: 8.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildTypeOption('Home', Icons.home_rounded),
-            _buildTypeOption('Office', Icons.domain_rounded),
-            _buildTypeOption('Apartment', Icons.apartment_rounded),
-            _buildTypeOption('Other', Icons.location_on_rounded),
-          ],
+        GestureDetector(
+          onTap: _showImagePickerModal,
+          child: Container(
+            height: 140.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F8F3),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(
+                color: _selectedImagePath != null
+                    ? AppColors.primary
+                    : AppColors.borderUnselected,
+                width: _selectedImagePath != null ? 2.0 : 1.2,
+              ),
+            ),
+            child: _selectedImagePath != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          _selectedImagePath!,
+                          fit: BoxFit.cover,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.1),
+                                Colors.black.withValues(alpha: 0.5),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 10.h,
+                          right: 10.w,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.edit_rounded,
+                                  size: 18.r, color: AppColors.primaryDark),
+                              onPressed: _showImagePickerModal,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12.h,
+                          left: 14.w,
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(4.r),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.accentLime,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.check_rounded,
+                                    size: 14.r, color: AppColors.primaryDark),
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                'Property photo attached',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 12.5.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12.r),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.add_a_photo_rounded,
+                          color: AppColors.primary,
+                          size: 26.r,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Upload Property Image',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textHeadline,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'Tap to select or capture front photo (JPG, PNG)',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.sp,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         ),
         SizedBox(height: 24.h),
       ],
